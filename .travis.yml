@@ -1,0 +1,13 @@
+language: go
+
+go:
+  - "1.x"
+
+go_import_path: github.com/thetannerryan/buff
+
+before_install:
+  - go get github.com/mattn/goveralls
+
+script:
+  - make
+  - $GOPATH/bin/goveralls -service=travis-ci
