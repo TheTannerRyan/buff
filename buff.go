@@ -50,23 +50,27 @@ func Init(size int, mode Mode) (*Buff, error) {
 	b.ptr = 0
 	b.data = make([][]byte, size)
 	b.mutex = &sync.RWMutex{}
+
 	return &b, nil
 }
 
 // Add adds data to the buffer.
 func (b *Buff) Add(data []byte) {
+	b.mutex.Lock()
+
 	// copy the data
 	buff := make([]byte, len(data))
 	copy(buff, data)
 
-	b.mutex.Lock()
 	// add data and increment pointer
 	b.data[b.ptr] = buff
 	b.ptr++
+
 	// wrap pointer back if at end
 	if b.ptr == b.size {
 		b.ptr = 0
 	}
+
 	b.mutex.Unlock()
 }
 
@@ -75,7 +79,6 @@ func (b *Buff) Test(key []byte) bool {
 	if b.mode == Oldest {
 		return b.testOldest(key)
 	}
-
 	return b.testRecent(key)
 }
 
@@ -90,38 +93,68 @@ func (b *Buff) Reset() {
 // GetRecent returns the most recent element.
 func (b *Buff) GetRecent() []byte {
 	b.mutex.RLock()
+	var buff []byte
+
+	// if pointer at 0, get last element in data
 	if b.ptr == 0 {
+		data := b.data[b.size-1]
+		// copy does not return nil (if data is nil, must return nil)
+		if data == nil {
+			b.mutex.RUnlock()
+			return nil
+		}
+		// data is not nil, copy and return
+		buff = make([]byte, len(data))
+		copy(buff, data)
 		b.mutex.RUnlock()
-		return b.data[b.size-1]
+		return buff
 	}
+
+	// pointer not at 0, get element before pointer
+	data := b.data[b.ptr-1]
+	buff = make([]byte, len(data))
+	copy(buff, data)
 	b.mutex.RUnlock()
-	return b.data[b.ptr-1]
+	return buff
 }
 
-// GetOldest returns the oldest element. Nil is returned if all of the data is nil.
+// GetOldest returns the oldest element. Nil is returned if all of the data is
+// nil.
 func (b *Buff) GetOldest() []byte {
 	b.mutex.RLock()
+	var buff []byte
+
 	// pointer to end (scanning right)
 	for i := b.ptr; i < b.size; i++ {
 		if b.data[i] != nil {
+			data := b.data[i]
+			buff = make([]byte, len(data))
+			copy(buff, data)
 			b.mutex.RUnlock()
-			return b.data[i]
+			return buff
 		}
 	}
+
 	// start to pointer (scanning right)
 	for i := 0; i < b.ptr; i++ {
 		if b.data[i] != nil {
+			data := b.data[i]
+			buff = make([]byte, len(data))
+			copy(buff, data)
 			b.mutex.RUnlock()
-			return b.data[i]
+			return buff
 		}
 	}
+
 	b.mutex.RUnlock()
 	return nil
 }
 
-// testRecent tests for the key in the buffer, starting at the most recent element.
+// testRecent tests for the key in the buffer, starting at the most recent
+// element.
 func (b *Buff) testRecent(key []byte) bool {
 	b.mutex.RLock()
+
 	// pointer to start (scanning left)
 	for i := b.ptr - 1; i >= 0; i-- {
 		if bytes.Equal(key, b.data[i]) {
@@ -129,6 +162,7 @@ func (b *Buff) testRecent(key []byte) bool {
 			return true
 		}
 	}
+
 	// end to pointer (scanning left)
 	for i := b.size - 1; i >= b.ptr; i-- {
 		if bytes.Equal(key, b.data[i]) {
@@ -136,6 +170,7 @@ func (b *Buff) testRecent(key []byte) bool {
 			return true
 		}
 	}
+
 	b.mutex.RUnlock()
 	return false
 }
@@ -143,6 +178,7 @@ func (b *Buff) testRecent(key []byte) bool {
 // testOldest tests for the key in the buffer, starting at the oldest element.
 func (b *Buff) testOldest(key []byte) bool {
 	b.mutex.RLock()
+
 	// pointer to end (scanning right)
 	for i := b.ptr; i < b.size; i++ {
 		if bytes.Equal(key, b.data[i]) {
@@ -150,6 +186,7 @@ func (b *Buff) testOldest(key []byte) bool {
 			return true
 		}
 	}
+
 	// start to pointer (scanning right)
 	for i := 0; i < b.ptr; i++ {
 		if bytes.Equal(key, b.data[i]) {
@@ -157,6 +194,7 @@ func (b *Buff) testOldest(key []byte) bool {
 			return true
 		}
 	}
+
 	b.mutex.RUnlock()
 	return false
 }

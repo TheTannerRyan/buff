@@ -1,5 +1,5 @@
 test:
-	GOCACHE=off go test -v buff_test.go
+	GOCACHE=off go test -race -v buff_test.go
 
 coverage:
 	GOCACHE=off go test -covermode=count -coverprofile=count.out ./...

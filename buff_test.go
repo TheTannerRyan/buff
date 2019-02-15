@@ -6,7 +6,6 @@ package buff_test
 
 import (
 	"bytes"
-	"fmt"
 	"math/rand"
 	"os"
 	"testing"
@@ -16,7 +15,7 @@ import (
 )
 
 const (
-	size = 100 // size of buffer
+	size = 1000 // size of buffers
 )
 
 var (
@@ -29,50 +28,7 @@ func TestMain(m *testing.M) {
 	// run tests
 	rand.Seed(time.Now().UTC().UnixNano())
 	ret := m.Run()
-
-	// benchmarks
-	fmt.Printf(">> Benchmark Recent Add():  %s\n", testing.Benchmark(BenchmarkAddRecent))
-	fmt.Printf(">> Benchmark Oldest Add():  %s\n", testing.Benchmark(BenchmarkAddOldest))
-	fmt.Printf(">> Benchmark Recent Test(): %s\n", testing.Benchmark(BenchmarkTestRecent))
-	fmt.Printf(">> Benchmark Oldest Test(): %s\n", testing.Benchmark(BenchmarkTestOldest))
-
 	os.Exit(ret)
-}
-
-// BenchmarkAddRecent tests adding elements to a buffer in Recent mode.
-func BenchmarkAddRecent(b *testing.B) {
-	data := make([]byte, 4)
-	for i := 0; i < b.N; i++ {
-		intToByte(data, i)
-		bufferRecent.Add(data)
-	}
-}
-
-// BenchmarkAddOldest tests adding elements to a buffer in Oldest mode.
-func BenchmarkAddOldest(b *testing.B) {
-	data := make([]byte, 4)
-	for i := 0; i < b.N; i++ {
-		intToByte(data, i)
-		bufferOldest.Add(data)
-	}
-}
-
-// BenchmarkTestRecent tests elements to a buffer in Recent mode.
-func BenchmarkTestRecent(b *testing.B) {
-	data := make([]byte, 4)
-	for i := 0; i < b.N; i++ {
-		intToByte(data, i)
-		bufferRecent.Test(data)
-	}
-}
-
-// BenchmarkTestOldest tests elements to a buffer in Oldest mode.
-func BenchmarkTestOldest(b *testing.B) {
-	data := make([]byte, 4)
-	for i := 0; i < b.N; i++ {
-		intToByte(data, i)
-		bufferOldest.Test(data)
-	}
 }
 
 // TestBadParameters ensures that errornous parameters return an error.
@@ -107,7 +63,8 @@ func TestReset(t *testing.T) {
 	}
 }
 
-// TestOverwrite ensures that the oldest data is overwritten (proper wrap around).
+// TestOverwrite ensures that the oldest data is overwritten (proper wrap
+// around).
 func TestOverwrite(t *testing.T) {
 	data := []byte("testing")
 	buff := make([]byte, 4)
@@ -115,7 +72,8 @@ func TestOverwrite(t *testing.T) {
 	bufferRecent.Add(data)
 	bufferOldest.Add(data)
 
-	// loading elements the size of the buffer should bump out the original element
+	// loading elements the size of the buffer should bump out the original
+	// element
 	for i := 0; i < size; i++ {
 		intToByte(buff, i)
 		bufferRecent.Add(buff)
@@ -136,7 +94,8 @@ func TestOverwrite(t *testing.T) {
 	}
 }
 
-// TestData ensures that data is properly labeled before and after adding the data.
+// TestData ensures that data is properly labeled before and after adding the
+// data.
 func TestData(t *testing.T) {
 	// clear before starting
 	bufferRecent.Reset()
@@ -222,6 +181,48 @@ func TestGetOldest(t *testing.T) {
 
 	if bytes.Equal(bufferRecent.GetOldest(), data) || bytes.Equal(bufferOldest.GetOldest(), data) {
 		t.Fatalf("oldest element is not returned")
+	}
+}
+
+// TestRace is used for testing race condition (requires "-race" flag). By
+// spawning multiple goroutines performing "critical actions", this allows Go's
+// race dector to detect the presence of a race condition. Don't believe me? Try
+// commenting out one of the Lock/Unlock pairs and retesting.
+func TestRace(t *testing.T) {
+	for i := 0; i < size; i++ {
+		// add some elements
+		go func(i int) {
+			data := make([]byte, 4)
+			intToByte(data, i)
+			bufferRecent.Add(data)
+			bufferOldest.Add(data)
+		}(i)
+
+		// test some elements
+		go func(i int) {
+			data := make([]byte, 4)
+			intToByte(data, i)
+			bufferRecent.Test(data)
+			bufferOldest.Test(data)
+		}(i)
+
+		// get the oldest elements
+		go func() {
+			bufferRecent.GetOldest()
+			bufferRecent.GetOldest()
+		}()
+
+		// get the most recent elements
+		go func() {
+			bufferRecent.GetRecent()
+			bufferOldest.GetRecent()
+		}()
+
+		// reset the buffers
+		go func() {
+			bufferRecent.Reset()
+			bufferOldest.Reset()
+		}()
 	}
 }
 
