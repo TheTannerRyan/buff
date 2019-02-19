@@ -1,13 +1,13 @@
 # buff - thread safe circular buffer
 [![Build
-Status](https://travis-ci.org/TheTannerRyan/buff.svg?branch=master)](https://travis-ci.org/TheTannerRyan/buff)
+Status](https://img.shields.io/travis/TheTannerRyan/buff.svg?style=flat-square)](https://travis-ci.org/TheTannerRyan/buff)
 [![Coverage
-Status](https://coveralls.io/repos/github/TheTannerRyan/buff/badge.svg?branch=master)](https://coveralls.io/github/TheTannerRyan/buff?branch=master)
+Status](https://img.shields.io/coveralls/github/TheTannerRyan/buff.svg?style=flat-square)](https://coveralls.io/github/TheTannerRyan/buff?branch=master)
 [![Go Report
-Card](https://goreportcard.com/badge/github.com/thetannerryan/buff)](https://goreportcard.com/report/github.com/thetannerryan/buff)
-[![GoDoc](https://godoc.org/github.com/TheTannerRyan/buff?status.svg)](https://godoc.org/github.com/TheTannerRyan/buff)
+Card](https://goreportcard.com/badge/github.com/thetannerryan/buff?style=flat-square)](https://goreportcard.com/report/github.com/thetannerryan/buff)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-5673AF.svg?style=flat-square)](https://godoc.org/github.com/TheTannerRyan/buff)
 [![GitHub
-license](https://img.shields.io/github/license/thetannerryan/buff.svg)](https://github.com/TheTannerRyan/buff/blob/master/LICENSE)
+license](https://img.shields.io/github/license/TheTannerRyan/buff.svg?style=flat-square)](https://github.com/TheTannerRyan/buff/blob/master/LICENSE)
 
 Package buff provides a thread safe Go implementation of a circular buffer.
 
