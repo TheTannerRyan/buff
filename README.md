@@ -1,8 +1,7 @@
 # buff - thread safe circular buffer
 [![Build
 Status](https://img.shields.io/travis/TheTannerRyan/buff.svg?style=flat-square)](https://travis-ci.org/TheTannerRyan/buff)
-[![Coverage
-Status](https://img.shields.io/coveralls/github/TheTannerRyan/buff.svg?style=flat-square)](https://coveralls.io/github/TheTannerRyan/buff?branch=master)
+[![codecov](https://img.shields.io/codecov/c/github/TheTannerRyan/buff.svg?style=flat-square)](https://codecov.io/gh/TheTannerRyan/buff)
 [![Go Report
 Card](https://goreportcard.com/badge/github.com/thetannerryan/buff?style=flat-square)](https://goreportcard.com/report/github.com/thetannerryan/buff)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5673AF.svg?style=flat-square)](https://godoc.org/github.com/TheTannerRyan/buff)
