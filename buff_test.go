@@ -101,8 +101,10 @@ func TestData(t *testing.T) {
 	bufferRecent.Reset()
 	bufferOldest.Reset()
 
-	buff := make([]byte, 4)
+	var buff []byte
+
 	for i := 0; i < size; i++ {
+		buff = make([]byte, 4)
 		intToByte(buff, i)
 
 		// test that data is not added in the buffer before

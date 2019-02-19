@@ -58,12 +58,8 @@ func Init(size int, mode Mode) (*Buff, error) {
 func (b *Buff) Add(data []byte) {
 	b.mutex.Lock()
 
-	// copy the data
-	buff := make([]byte, len(data))
-	copy(buff, data)
-
 	// add data and increment pointer
-	b.data[b.ptr] = buff
+	b.data[b.ptr] = data
 	b.ptr++
 
 	// wrap pointer back if at end
